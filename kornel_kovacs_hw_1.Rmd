@@ -2,7 +2,9 @@
 title: "Lecture 1"
 author: "Marc Kaufmann"
 date: "9/10/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
