@@ -1,8 +1,10 @@
 ---
-title: "Lecture 2: Chapter 3 by Kieran Healy"
+title: 'Lecture 2: Chapter 3 by Kieran Healy'
 author: "Marc Kaufmann"
 date: "September 23, 2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -49,8 +51,10 @@ library(ggplot2)
 ```
 
 You link these steps by *literally* adding them together with `+` as we'll see.
-
+geom_
 **Exercise:** What other types of plots are there? Try to find several more `geom_` functions.
+
+**Answer:** There are several types such as geom_density(), geom_bar(), geom_map(). Full list to be found in the official documentation of the package: https://ggplot2.tidyverse.org/reference/
 
 ## Mappings Link Data to Things You See
 
@@ -74,12 +78,14 @@ In detail:
   
 Importantly, mappings don't say *what* color or shape some variable will have -- rather, it says that a given dataset will be mapped *to* the color or *to* the shape.
 
-```{r, what_is_in_p}
+```{r, what_is_in_p, eval=FALSE}
 str(p)
 str(p + geom_point())
 ```
 
 **Exercise:** Make sure that your knitted version doesn't include all the output from the `str(...)` commands, it's too tedious.
+
+**Answer: ** Sure.
 
 Finally, we add a *layer*. This says how some data gets turned into concrete visual aspects.
 
@@ -108,6 +114,8 @@ p + geom_point() + geom_smooth(method = "lm") + scale_x_log10()
 
 **Exercise:** Describe what the `scale_x_log10()` does. Why is it a more evenly distributed cloud of points now? (2-3 sentences.)
 
+**Answer:** It transfroms the values of the x axis by taking the log of every single value. For example if values are 8 and 20 their difference is 12. Taking their logs and then their difference  we only get log(20) -  log(8) = 1.3 - 0.9 = 0.4. That is why it is more evenly distributed.
+
 Nice! The x-axis now has scientific notation, let's change that.
 
 ```{r, scales, eval=FALSE}
@@ -122,11 +130,15 @@ p + geom_point() +
 
 **Exercise:** What does the `dollar()` call do?
 
-```{r, dollar_answer}
+**Answer:** It labels the values on the selected axis as if they were money related values (dollars, to be precise). 
+
+```{r, dollar_answer, eval = FALSE}
 ?dollar()
 ```
 
 **Exercise:** How can you find other ways of relabeling the scales when using `scale_x_log10()`?
+
+**Answer:** Any other log function would do the work. Square root function is okay as well.
 
 ### The Ggplot Recipe
 
@@ -156,7 +168,16 @@ p + geom_point(...) + scale_x_log10()
 **Exercise:** Based on the discussion in Chapter 3 of *Data Visualization* (read it), describe in your words what is going on. 
 One way to avoid such mistakes is to read arguments inside `aes(<property> = <variable>)`as *the property <property> in the graph is determined by the data in <variable>*. 
 
+**Answer:** Colouring the dots to yellow is not related to the dataset, but related to the way you want to plot is. Accordingly, you have to set the colouring in the `geom_whaterver` as an argument.
+
 **Exercise:** Write the above sentence for the original call `aes(x = gdpPercap, y = lifeExp, color = 'yellow')`.
+
+**Answer:**
+```{r, mapping_vs_setting_correct}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap, y = lifeExp))
+p + geom_point(color = "yellow") + scale_x_log10()
+```
 
 Aesthetics convey information about a variable in the dataset, whereas setting the color of all points to yellow conveys no information about the dataset - it changes the appearance of the plot in a way that is independent of the underlying data. 
 
@@ -169,6 +190,8 @@ p + geom_point() + geom_smooth(color = "orange", se = FALSE, size = 8, method = 
 ```
 
 **Exercise:** Write down what all those arguments in `geom_smooth(...)` do.
+
+**Answer: ** I think coloring goes without saying. It paints the smoothing line to orange. Size refers to the boldness of the line. SE refers to standard error, so whether a confidence intervall should be included or not. Method refers to the way the smoothing is done. LM probably stands for linear modelling. 
 
 ```{r, gapminder_with_labels}
 p + geom_point(alpha = 0.3) + 
@@ -193,6 +216,8 @@ p + geom_point() + scale_x_log10(labels = dollar) + geom_smooth()
 
 **Exercise:** What does `fill = continent` do? What do you think about the match of colors between lines and error bands?
 
+**Answer: ** By applying `fill = continent` the confidence interval of the smoothing line will have the same colour as the line and dots themselves.
+
 ```{r, gapminder_color_by_continent_single_line}
 p <- ggplot(data = gapminder,
             mapping = aes(x = gdpPercap, y = lifeExp))
@@ -201,7 +226,11 @@ p + geom_point(mapping = aes(color = continent)) + geom_smooth() + scale_x_log10
 
 **Exercise:** Notice how the above code leads to a single smooth line, not one per continent. Why?
 
+**Answer: ** Because we only applied `aes(color = continent)` to `geom_point()` and did not apply it for `geom_smooth()`. The latter is responsible for the smoothing line(s).
+
 **Exercise:** What is bad about the following example, assuming the graph is the one we want? This is why you should set aesthetics at the top level rather than at the individual geometry level if that's your intent.
+
+**Answer: ** We doubled `geom_smooth()` which is why there are two types of smoothing lines for each country. One with the default method and one with `gam`. If that is what you want, okay, go for it. But it is more likely that 2 different graphs would give you a better understanding of the data. In case you stick to this graph, do label which smoothing line (per country) is created by the `gam` method and which one belongs to the default smoothing method otherwise it cannot be determined.
 
 ```{r, many_continents}
 p <- ggplot(data = gapminder,
@@ -209,24 +238,132 @@ p <- ggplot(data = gapminder,
 p + geom_point(mapping = aes(color = continent)) + 
   geom_smooth(mapping = aes(color = continent, fill = continent)) + 
   scale_x_log10() + 
-  geom_smooth(mapping = aes(color = continent), method = "gam")
+  geom_smooth(mapping = aes(color = continent), method = "gam") +
+  labs(x = "GDP Per Capita", y = "Life Expectancy in Years",
+       title = "Economic Growth and Life Expectancy",
+       subtitle = "Data Points are country-years",
+       caption = "Saved by Kornel Kovacs, Source by gapminder")
+ggsave("./data/growth.png", plot = last_plot())
 ```
 
 ## Additional (not Optional) Exercises 
 
 **Exercise (Discourse):** Find ways to save the figures that you made so that you can use them elsewhere too. Create a new folder to save only images. Use the command for saving to save the picture for the last image in your new folder, after you have updated the axes, title, subtitle, and caption of the image. Post your solution on Discourse and use it to include the final image above with a caption saying "Saved by <your-name>" inside your Discourse post.
 
+**Answer (Discourse):** See on Discourse.
+
 **Exercise:** Read section 3.8 "Where to go next" from DV. Based on those ideas, experiment and create two different graphs with the gapminder data. Describe each briefly in one sentence.
+
+**Answer :** Now, instead of using log transformation, we use a square root transformation. It is more evenly distributed than the normal plot, but less then the log one.
+
+```{r, exp_1}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap, y = lifeExp))
+p + geom_point(mapping = aes(color = continent)) +  
+  geom_smooth(mapping = aes(color = continent)) + 
+  scale_x_sqrt() + 
+  labs(x = "GDP Per Capita", y = "Life Expectancy in Years",
+       title = "Economic Growth and Life Expectancy",
+       subtitle = "Data Points are country-years",
+       caption = "Source: gapminder")
+```
+
+Here, we use population instead of GDP per capita. We try to shed light on the connection of life expectancy and population. We see a strong distinction between developing continets (Africa) and developed continents (e.g. Europe).
+
+```{r, exp_2}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = pop, y = lifeExp))
+p + geom_point(mapping = aes(color = continent)) +  
+  geom_smooth(mapping = aes(color = continent)) + 
+  scale_x_log10() + 
+  labs(x = "Population", y = "Life Expectancy in Years",
+       title = "Population and Life Expectancy",
+       subtitle = "Data Points are country-years",
+       caption = "Source: gapminder")
+```
 
 **Exercise:** Read section 1.6 of [R for Data Science](https://r4ds.had.co.nz/introduction.html) on *Getting help and learning more*. Go back to an error from your previous assignment -- or pick a new one -- and post a reproducible error as described in that section on the discourse forum.
 
+**Answer :** Posted on Discourse.
+
 **Exercise:** Do exercise 3.2.4 from [R for Data Science](https://r4ds.had.co.nz/data-visualisation.html#first-steps). Include your code in chunks, describe the output and code (where necessary) in the surrounding text.
+
+**Answer :** 
+
+1, An emptpy plot, beacause only data is defined, but there is no mapping or geom_.
+```{r, 3.2.4.1}
+ggplot(data = mpg)
+```
+
+2, 234 rows and 11 cols
+```{r, 3.2.4.2}
+ncol(mpg)
+nrow(mpg)
+```
+
+3, drv: f = front-wheel drive, r = rear wheel drive, 4 = 4wd
+```{r, 3.2.4.3, eval = FALSE}
+?mpg
+```
+
+4, See graph below
+```{r, 3.2.4.4}
+p <- ggplot(data = mpg,
+            mapping = aes(x = cyl , y = hwy))
+p + geom_point() +
+labs(x = "Number of cylinders", y = "Highway miles per gallon")
+```
+
+5, These are two categorical variables, doesn't really makes sense to use a scatterplot here.
+```{r, 3.2.4.5}
+p <- ggplot(data = mpg,
+            mapping = aes(x = class , y = drv))
+p + geom_point() +
+labs(x = "'type' of car", y = "Type of driving system")
+```
 
 **Exercise:** Go through Exercises in 3.3.1. If an exercise does not make sense immediately (such as you don't know what a categorical variable is), replace the question by a question that addresses that point (in the case of the caregorical variable "What are categorical and continuous variables and how are they different in R?"). Write it down, try to answer that question, and ignore the original question. That way you don't end up spending too much time on this one exercise.
 
+**Answer :** 
+
+1, Should have place the 'color' argument outside of aes, like this:
+```{r, 3.3.1.1}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+2, Categorical: manufacturer, model, cyl, trans, drv, fl, class
+
+Continuous: disp, year, cty, hwy
+
+Note: Year can actually be both types, it is a matter of interpretation.
+
+3, Horrible graph, I know. It is not really a good idea to use categorical variables with scatter plot on both axes.Every single category will be displayed as there is not really a between of two categorical vars.  
+```{r, 3.3.1.3}
+ggplot(data = mpg) + geom_point(mapping = aes(x = hwy, y = cty), size = 8, color = "blue", shape = 25)
+```
+
+4, Perfect correlation can be seen here. Of course, it is possible, but doesn't really make sense.
+```{r, 3.3.1.4}
+ggplot(data = mpg) + geom_point(mapping = aes(x = hwy, y = hwy))
+```
+
+5, When dots have an inside and an outside part, it is possible to colour them differently. Stroke is used to set the width of the outside part, also called the border.
+```{r, 3.3.1.5}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy), shape = 21, color = "blue", fill = "white", stroke = 2)
+```
+
+6, It is going to colour the dots according to whether the corresponding 'disp' value is greater then 5 or not. 
+```{r, 3.3.1.6}
+ggplot(data = mpg) + geom_point(mapping = aes(x = displ, y = hwy, colour = displ < 5))
+```
+
 **Exercise:** Read the (very short) [Chapter 4 of R for Data Science](https://r4ds.had.co.nz/workflow-basics.html) and try exercise 1 in section 4.4.
 
+**Answer :** In the second line, there is a typo or a wrong character. "i" and "ı" are not the same, so there is no variable to be found, accordingly we are given an error message.
+
 **Bonus Exercise:** Why did I load the `scales` library twice via `library(scales)` to knit? 
+
+**Bonus Answer :** In the first appearance, the `eval` argument is set to `FALSE`, therefore when knitting it is not compiled. It is just basically a text, not a line of code to be run.
 
 ## Assignment 3
 
