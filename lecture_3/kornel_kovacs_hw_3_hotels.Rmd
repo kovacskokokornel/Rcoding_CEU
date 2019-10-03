@@ -1,5 +1,5 @@
 ---
-title: "kornel_kovacs_hw_3"
+title: "kornel_kovacs_hw_3_hotels"
 author: "Kornel Kovacs"
 date: '2019 10 01 '
 output: html_document
@@ -8,74 +8,97 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Prerequisites and reads
+# 1. Prerequisites and reads
 ```{r load, eval=TRUE}
 library(tidyverse)
 hotels <- read.csv(file = "..//da_data_repo/hotels-vienna/clean/hotels-vienna.csv")
-hotels
+head(hotels)
 ```
 
-# Overview of data
+# 2. Overview of data
 ```{r overview, eval=TRUE}
 colnames(hotels)
-hotels
 ```
 
-# Filtering (choosing) rows with filter() and saving.
+# 3. Filtering (choosing) rows with filter() and saving
 ```{r choosing, eval=TRUE}
-(filter(hotels, stars == 4.0))
+head((filter(hotels, stars == 4.0)))
 Alsergrund_4star <- (filter(hotels, stars == 4.0))
 ```
 
-## Logical operators
-### AND - &
+## 3.1 Logical operators
+### 3.1.1 AND - &
 ```{r and, eval=TRUE}
 Alsergrund_4star <- filter(hotels, stars == 4.0 & neighbourhood == 'Alsergrund')
 Alsergrund_4star <- filter(hotels, stars == 4.0,  neighbourhood == 'Alsergrund')
 ```
 
-### OR - |
+### 3.1.2 OR - |
 
 ```{r or, eval=TRUE}
 Alsergrund_or_4star <- filter(hotels, stars == 4.0 | neighbourhood == 'Alsergrund')
 ```
 
-### NOT - !
+### 3.1.3 NOT - !
 
 ```{r not, eval=TRUE}
 not_4star_in_Alsergrund_4star <- filter(hotels, stars != 4.0)
 ```
 
-### Let's combine them!
+### 3.1.4 Let's combine them!
 
 ```{r combine, eval=TRUE}
 not_4star_in_Alsergrund <- filter(hotels, stars != 4.0 & neighbourhood == 'Alsergrund')
 ```
 
-### Trick
+### 3.1.5 Trick
 
 ```{r trick, eval=TRUE}
 four_five_stars <- filter(hotels, stars %in% c(4.0,5.0))
 ```
 
-### Do not overcomplicate, do not use negation unless necessary!
+### 3.1.6 Do not overcomplicate, do not use negation unless necessary!
 
 ```{r overcomplicate, eval=TRUE}
-filter(hotels, !(rating > 4.0 | stars > 4.0))
-filter(hotels, rating <= 4.0, stars <= 4.0)
+head(filter(hotels, !(rating > 4.0 | stars > 4.0)))
+head(filter(hotels, rating <= 4.0, stars <= 4.0))
 ```
 
-## I skipped the NA part, because it would have been copy-pasting, which I try to avoid.
+## 4. I skipped the NA part, because it would have been copy-pasting, which I try to avoid.
 
-## arrange()
+## 5. arrange()
 
-### Worst hotels according to ratings
-### Note that in a real analysis we should take into account the number of ratings as well.
+### 5.1 Worst hotels according to ratings
+Note that in a real analysis we should take into account the number of ratings as well.
 ```{r worst, eval=TRUE}
-arrange(hotels, rating)
+head(arrange(hotels, rating))
 ```
 
-### Best hotels according to ratings
+### 5.2 Best hotels according to ratings
 ```{r best, eval=TRUE}
-arrange(hotels, desc(rating))
+head(arrange(hotels, desc(rating)))
 ```
+
+## 5. select()
+
+```{r select_1, eval=TRUE}
+head(select(hotels, accommodation_type , nnights , rating))
+```
+
+```{r select_2, eval=TRUE}
+head(select(hotels, accommodation_type:rating))
+```
+
+```{r select_3, eval=TRUE}
+head(select(hotels, -(center1label:rating)))
+```
+
+```{r select_4, eval=TRUE}
+head(select(hotels, accommodation_type , rating, everything()))
+```
+
+```{r rename, eval=TRUE}
+head(rename(hotels, customer_rating = rating))
+```
+
+
