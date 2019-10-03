@@ -2,7 +2,9 @@
 title: "kornel_kovacs_hw_3_hotels"
 author: "Kornel Kovacs"
 date: '2019 10 01 '
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
