@@ -1,0 +1,81 @@
+---
+title: "kornel_kovacs_hw_3"
+author: "Kornel Kovacs"
+date: '2019 10 01 '
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Prerequisites and reads
+```{r load, eval=TRUE}
+library(tidyverse)
+hotels <- read.csv(file = "..//da_data_repo/hotels-vienna/clean/hotels-vienna.csv")
+hotels
+```
+
+# Overview of data
+```{r overview, eval=TRUE}
+colnames(hotels)
+hotels
+```
+
+# Filtering (choosing) rows with filter() and saving.
+```{r choosing, eval=TRUE}
+(filter(hotels, stars == 4.0))
+Alsergrund_4star <- (filter(hotels, stars == 4.0))
+```
+
+## Logical operators
+### AND - &
+```{r and, eval=TRUE}
+Alsergrund_4star <- filter(hotels, stars == 4.0 & neighbourhood == 'Alsergrund')
+Alsergrund_4star <- filter(hotels, stars == 4.0,  neighbourhood == 'Alsergrund')
+```
+
+### OR - |
+
+```{r or, eval=TRUE}
+Alsergrund_or_4star <- filter(hotels, stars == 4.0 | neighbourhood == 'Alsergrund')
+```
+
+### NOT - !
+
+```{r not, eval=TRUE}
+not_4star_in_Alsergrund_4star <- filter(hotels, stars != 4.0)
+```
+
+### Let's combine them!
+
+```{r combine, eval=TRUE}
+not_4star_in_Alsergrund <- filter(hotels, stars != 4.0 & neighbourhood == 'Alsergrund')
+```
+
+### Trick
+
+```{r trick, eval=TRUE}
+four_five_stars <- filter(hotels, stars %in% c(4.0,5.0))
+```
+
+### Do not overcomplicate, do not use negation unless necessary!
+
+```{r overcomplicate, eval=TRUE}
+filter(hotels, !(rating > 4.0 | stars > 4.0))
+filter(hotels, rating <= 4.0, stars <= 4.0)
+```
+
+## I skipped the NA part, because it would have been copy-pasting, which I try to avoid.
+
+## arrange()
+
+### Worst hotels according to ratings
+### Note that in a real analysis we should take into account the number of ratings as well.
+```{r worst, eval=TRUE}
+arrange(hotels, rating)
+```
+
+### Best hotels according to ratings
+```{r best, eval=TRUE}
+arrange(hotels, desc(rating))
+```
