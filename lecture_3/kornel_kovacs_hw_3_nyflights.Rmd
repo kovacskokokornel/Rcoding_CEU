@@ -1,5 +1,5 @@
 ---
-title: "kornel_kovacs_hw_3"
+title: "kornel_kovacs_hw_3_nyflights"
 author: "Kornel Kovacs"
 date: '2019 10 01 '
 output: html_document
@@ -185,6 +185,10 @@ arrange(df, x)
 arrange(df, desc(x))
 ```
 # Class exercise (do at home): How can we get the missing values at the top?
+
+```{r home, eval=TRUE}
+head(arrange(flights, !is.na(desc(arr_delay))))
+```
 
 
 # Fastest flight
