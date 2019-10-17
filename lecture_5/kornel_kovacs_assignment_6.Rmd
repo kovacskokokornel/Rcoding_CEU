@@ -1,0 +1,193 @@
+---
+title: "Assignment 6"
+author: "Kornel Kovacs"
+date: "10/17/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE
+)
+```
+
+
+## Exercise 1
+
+```{r, include=FALSE}
+library('tidyverse')
+library(nycflights13)
+```
+
+1, The number of flights (in the whole year) to each destination
+```{r}
+dest_counter <- 
+  flights %>%
+  group_by(dest) %>%
+  summarize(dest_count = n())
+
+top_n(dest_counter, 10)
+```
+
+2, The number and list of distinct airports in the US
+
+I think the number of entries should be the same with ``faa`` and ``name`` as well, but they are not. No idea why.
+```{r}
+dist_airports_acc_to_faa <- distinct(filter(airports, 
+                                            grepl('America', tzone)), 
+                                     faa)
+dist_airports_acc_to_name <- distinct(filter(airports, 
+                                             grepl('America', tzone)), 
+                                      name)
+
+top_n(dist_airports_acc_to_faa, 10)
+top_n(dist_airports_acc_to_name, 10)
+
+nrow(dist_airports_acc_to_faa)
+nrow(dist_airports_acc_to_name)
+```
+
+3, The number airports that are further south than NYC (Hint: look up longitude and latitude.)
+
+![ ](nyc_lat_long.PNG)
+
+We are only looking for airports to the south, therefore we only need longitude.
+
+```{r}
+nyc_lon <- -73.935242
+south_from_nyc <- filter(airports, 
+                         lon < nyc_lon)
+nrow(south_from_nyc)
+```
+
+4, The top 5 carriers that have the lowest average delay times.
+
+For further analysis, we should include the number of flights for each carrier.
+As it was not defined I worked with arrival delays rather than departure ones as they are more relevant to customers.
+
+```{r}
+(airlines_on_time <- flights %>%
+  filter(!is.na(arr_delay)) %>%
+  group_by(carrier) %>%
+  summarize(avg_delay = mean(arr_delay), count = n()) %>%
+  arrange(avg_delay) %>%
+  head(5))
+
+```
+
+## Exercise 2
+
+1, **diamonds** dataset, columns: ``carat``, ``color``
+
+```{r}
+(missing_diamonds <- diamonds %>%
+  filter(is.na(carat), is.na(color)))
+```
+
+2, **flights** dataset, columns: ``arr_delay``, ``dep_delay``
+
+```{r}
+(missing_flights <- flights %>%
+  filter(is.na(arr_delay), is.na(dep_delay)))
+```
+
+3, **mtcars** dataset, columns: ``cyl``, ``mpg``
+
+```{r}
+(missing_mtcars <- mtcars %>%
+  filter(is.na(cyl), is.na(mpg)))
+```
+
+Searching for ``NA`` values in all columns would require to type the name of all the columns of the DF. It requires a lot of time and exposes us to the pain of typos.
+
+## Exercise 3
+
+```{r}
+(diamonds_any_missing <- filter_all(diamonds, any_vars(is.na(.))))
+
+(flights_any_missing <- filter_all(flights, any_vars(is.na(.))))
+
+(mtcars_any_missing <- filter_all(mtcars, any_vars(is.na(.))))
+```
+
+## Exercise 4 
+
+I picked this one to skip. I know myself; if I had done this exercise, I would have spent 80% of the time choosing my favourite dataset instead of visualisation and it would not have been efficient now.
+
+## Exercise 5
+
+Calculate the average values of ``x`` and ``y`` for each group in the below dataset.
+
+```{r}
+(df <- read_csv("1,2,3
+         2,-,6
+         2,9,-", col_names = c("group_number", "x", "y"),na = "-"))
+```
+
+Wrong solution:
+```{r}
+(avg_df <- df %>%
+  group_by(group_number) %>%
+  summarise(avg_x = mean(x), avg_y = mean(y)))
+```
+
+Good solution: 
+```{r}
+(avg_df <- df %>%
+  filter(!is.na(x), !is.na(y)) %>%
+  group_by(group_number) %>%
+  summarise(avg_x = mean(x), avg_y = mean(y)))
+```
+
+**Take-away:** if a group of values contains at least one ``NA`` value, the average will be ``NA`` as well. R will not disregard them automatically, you have to filter out tha ``NA`` values before calculating means (and probably other summary statistics as well).
+
+## Exercise 6
+
+It is about reading our own data to R. Quite helpful.
+
+Reading own CSV file:
+
+```{r}
+hotels <- read.csv(file = "..//da_data_repo/hotelbookingdata.csv")
+```
+
+"Reading" CSV inputted from command.
+
+```{r}
+read_csv("a,b,c
+1,2,3
+4,5,6")
+```
+
+Skipping rows:
+
+```{r}
+read_csv("The first line of metadata
+  The second line of metadata
+  x,y,z
+  1,2,3", skip = 2)
+```
+
+Reading without header:
+
+```{r}
+read_csv("1,2,3
+         4,5,6", col_names = FALSE)
+```
+
+Inputting column names separately:
+
+```{r}
+read_csv("1,2,3
+         4,5,6", col_names = c("x", "y", "z"))
+```
+
+We can tell R what input chars to transform to NA values:
+
+```{r}
+read_csv("a,b,c
+         1,.,.", na = ".")
+```
+
