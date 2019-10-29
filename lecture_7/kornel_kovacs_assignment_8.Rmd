@@ -1,0 +1,175 @@
+---
+title: "Assignment 8"
+author: "Kornel Kovacs"
+date: "10/28/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library('haven')
+```
+
+
+# Exercise 1:
+I created a project for this assignment in a folder.
+
+# Exercise 2:
+All done
+
+# Exercise 3:
+Reading in from the CSV:
+```{r, include=FALSE}
+df_csv <- read_csv('./data_repo/hotels-europe/clean/hotels-europe_price.csv')
+```
+
+Reading in from the DTA:
+```{r}
+df_dta <- read_dta('./data_repo/hotels-europe/clean/hotels-europe_price.dta')
+```
+
+Let us see whether they have the same lenght or not. Spoiler: They do.
+```{r}
+nrow(df_csv)
+nrow(df_dta)
+```
+
+Let us see whether they have the same head and tail or not. Spoiler: They do.
+```{r}
+head(df_csv)
+head(df_dta)
+```
+
+```{r}
+tail(df_csv)
+tail(df_dta)
+```
+
+I was wondering whether we have the same columns and types of them are consistent or not. Spoiler: They do.
+```{r}
+sapply(df_csv, class)
+sapply(df_dta, class)
+```
+
+Finally, there are more sophisticated ways of showing whether they are identical or not. I should have started with this one, but I wanted to show several aspects of testing before coming up with this function.
+
+All values are the same or not:
+```{r, warning=FALSE}
+all.equal(df_csv, df_dta)
+```
+
+Okay..but these are only the values. Are they dentical objects as well?
+```{r}
+identical(df_dta, df_csv)
+```
+
+**They are the same dataframes!**
+
+# Exercise 4:
+Creating a sample of 200 to write out.
+```{r}
+df_csv_200 <- df_csv[sample(nrow(df_csv), 200), ]
+```
+
+Actually writing it out. Notice, I already did the alteration part as ``write_csv2()`` uses ``;`` as a separator.
+```{r}
+write_csv2(df_csv_200, "hotels_cleaned_200.csv")
+```
+
+Now, try reading it back in.
+```{r, warning=FALSE}
+df_csv_200 <- read_csv("hotels_cleaned_200.csv")
+head(df_csv_200)
+```
+
+We do not see a structure, just the whole thing in one column. The problem is that ``read_csv()`` is looking for ``,`` to separate values by, but it doesn't find any of such a kind. As a solution we either have to specify the value of the separator or use another function which has ``;`` as the default separator value. ``read_csv2()`` is such a function. I chose this way of screwing up the dataset because it is very often the case that we have something else as a separator other than ``,``.
+
+# Exercise 5:
+
+We have data from WHO to make it tidy.
+```{r}
+head(who)
+```
+
+We use the function ``gather()`` to get rid of several columns leaving out NAs.
+```{r}
+who1 <- who %>% 
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE)
+head(who1)
+```
+
+We can count the keys we just created to get a sense we have done it right.
+```{r}
+who1 %>% 
+  count(key)
+```
+
+Correcting some inconsistency concerning the values of the columns ``key``.
+```{r}
+who2 <- who1 %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+head(who2)
+```
+
+We split values and create new columns.
+```{r}
+who3 <- who2 %>% 
+  separate(key, c("new", "type", "sexage"), sep = "_")
+head(who3)
+```
+
+We drop columns we do not use or redundant.
+```{r}
+who4 <- who3 %>% 
+  select(-new, -iso2, -iso3)
+head(who4)
+```
+
+You may have noticed that ``sexage`` is still not a standalone columns. Let's split that!
+```{r}
+who5 <- who4 %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+head(who5)
+```
+
+Putting it all together in a huge pipe.
+```{r}
+who %>%
+  gather(key, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel")) %>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+Now, we have a nice tidy table. We can start the analysis!
+
+# Exercise 6:
+
+I am supposed to tidy the following dataset.
+```{r, data_exercise_t}
+df <- tibble(name = c("A123", "B456"), 
+             age = c(30, 60), 
+             answer1 = c(0, 1), 
+             answer2 = c(1,1), 
+             answer3 = c(1,0), 
+             answer4 = c(0,0))
+head(df)
+```
+
+First, I realize that they are the ``answerN`` columns that should be modified. If I want to add more answer types(?) as dimensions to this table I always have to create a new column. I do not want that. I would only want to add a new row to the existing table. Accordingly, I keep ``name`` and ``age`` and add a column to assess the 'type' of the answer and the value of it.
+
+Make it tidy with ``gather()``:
+```{r}
+df_tidy <- df %>%
+  gather(`answer1`, 
+         `answer2`, 
+         `answer3`, 
+         `answer4`, 
+         key = "type of answer", 
+         value = "value of the answer")
+head(df_tidy)
+```
