@@ -1,0 +1,220 @@
+---
+title: "Assignment 9"
+author: "Kornel Kovacs"
+date: "11/09/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library('haven')
+```
+I created a project and placed the csv files in its root from where I read them in.
+
+## Exercise 1:
+```{r, include=FALSE}
+df_price <- read_csv('./hotels-europe_price.csv')
+df_features <- read_csv('./hotels-europe_features.csv')
+```
+
+I realize that it is the ``hotel_id`` column on which I should join the two tables. Notice, that ``df_hotel`` will become panel data as it contains more observations across time for each hotel.
+```{r}
+df_hotel<- df_price %>%
+  left_join(df_features, by = "hotel_id")
+```
+
+These 3 rows do not have feature data in ``df_features``.
+
+```{r}
+df_price %>%
+  anti_join(df_features, by = "hotel_id")
+```
+
+## Exercise 2
+
+First, I read the vienna dataset in.
+```{r, include=FALSE}
+df_vienna <- read_csv('./hotels-vienna.csv')
+```
+
+### Plotting price against rationally relevant explanatory variables and estimating linear models.
+
+I print out the coefficient, the intercept and the R squared values as well as the plots.
+
+#### Price and distance
+```{r}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = distance, y = price))
+p + geom_point()
+```
+
+
+```{r}
+price_dist <- lm(price ~ distance, data = df_vienna)
+summary(price_dist)$coefficients
+print(paste0("R squared: ", summary(price_dist)$r.squared)) 
+```
+
+
+#### Price and ratings
+```{r}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = rating, y = price))
+p + geom_point()
+```
+
+```{r}
+price_ratings <- lm(price ~ rating, data = df_vienna)
+summary(price_ratings)$coefficients
+print(paste0("R squared: ", summary(price_ratings)$r.squared)) 
+```
+
+
+#### Price and stars
+```{r}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = stars, y = price))
+p + geom_point()
+```
+
+```{r}
+price_stars <- lm(price ~ stars, data = df_vienna)
+summary(price_stars)$coefficients
+print(paste0("R squared: ", summary(price_stars)$r.squared)) 
+```
+
+It is the variable ``stars`` that seems to have the most explanatory power, however, when looking at the graph, we can observe that the relationship does not seem to be linear.
+
+## Exercise 3
+
+I will go with ``price_dist`` model in this exercise.
+
+First, I extract the residuals from my favourite model.
+```{r}
+df_vienna$res <- resid(price_dist)
+```
+
+Then, I plot it against some vairables.
+```{r, warning=FALSE}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = res, y = distance))
+p + geom_point() + xlab("residuals")
+```
+
+```{r, warning=FALSE}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = res, y = rating))
+p + geom_point() + xlab("residuals")
+```
+
+```{r, warning=FALSE}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = res, y = ratingta_count))
+p + geom_point() + xlab("residuals") + ylab("number of ratings")
+```
+
+In every single case, there seems to be a tendency. Residuals do not look to be randomly distributed when plotting against the above variables.
+
+## Exercise 4
+
+We want to have a sense of the distribution of our residuals. When estimating linear regressions, a key is that we have **homoskedasticity**.
+
+First, I plot a histogram to have a better understanding of the distribution of residuals. It has some extreme values and a long right tail, but most of the values are around 0. 
+
+```{r, message = FALSE}
+ggplot(df_vienna, aes(res)) +
+    geom_histogram()
+```
+
+When we plot the residuals against the y variable we should see a linear(ish) relationship, which we quite do.
+
+```{r}
+p <- ggplot(data = df_vienna,
+            mapping = aes(x = res, y = price))
+p + geom_point() + xlab("residuals")
+```
+
+I can also plot a graph reflecting to the greatness of differences between predicted values and actual values. [Kudos to Rpubs](https://rpubs.com/iabrady/residual-analysis)
+```{r}
+df_vienna$predicted <- predict(price_dist)  
+ggplot(df_vienna, aes(x = distance, y = price)) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +     
+  geom_segment(aes(xend = distance, yend = predicted), alpha = .2) +      
+  geom_point(aes(color = abs(res), size = abs(res))) +  
+  scale_color_continuous(low = "green", high = "red") +             
+  guides(color = FALSE, size = FALSE) +                             
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+```
+
+There are more sophisticated ways to deal with heteroskedasticity. I rather went with showing some plots.
+
+## Exercise 5
+
+First, I get rid of its panel data nature by filtering to a specific year and month which I chose arbitrarily. As for the city, I chose Amsterdam.
+```{r}
+df_ams <- df_hotel %>%
+  filter(city == 'Amsterdam') %>%
+  filter(year == 2017) %>%
+  filter(month == 11)
+```
+
+First, I predict the values estimated from the Vienna model of price and distance using AMS data.
+```{r}
+df_ams$predicted <- predict(price_dist, df_ams)
+```
+
+A scatterplot of estimated and actual values shows that these two cities have different characteristics. Most importantly, AMS is more expensive.
+```{r}
+p <- ggplot(data = df_ams,
+            mapping = aes(x = predicted, y = price))
+p + geom_point() + xlab("predicted price") + ylab("actual price")
+```
+
+Then, we calculate the residual values for AMS.
+```{r}
+df_ams$resid_ams <- df_ams$price - df_ams$predicted
+```
+
+As we have the residuals, we can plot a nice graph well illustrating the differences between predicted values and actual ones. The grey line illustrates where the regression line should be if we used AMS data for estimation. [Again, kudos to Rpubs](https://rpubs.com/iabrady/residual-analysis)
+```{r}
+ggplot(df_ams, aes(x = distance, y = price)) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightgrey") +     
+  geom_segment(aes(xend = distance, yend = predicted), alpha = .2) +      
+  geom_point(aes(color = abs(resid_ams), size = abs(resid_ams))) +  
+  scale_color_continuous(low = "green", high = "red") +             
+  guides(color = FALSE, size = FALSE) +                             
+  geom_point(aes(y = predicted), shape = 1) +
+  theme_bw()
+```
+
+**We can conclude that the Vienna model is underestimating prices in AMS.**
+ 
+## Exercise 6.
+
+I reestimate my favourite model with AMS data.
+```{r}
+price_dist_ams <- lm(price ~ distance, data = df_ams)
+summary(price_dist_ams)$coefficients
+print(paste0("R squared: ", summary(price_dist_ams)$r.squared)) 
+```
+
+I a reminder, I have the Vienna model here:
+```{r}
+price_dist <- lm(price ~ distance, data = df_vienna)
+summary(price_dist)$coefficients
+print(paste0("R squared: ", summary(price_dist)$r.squared)) 
+```
+
+We have a higher R squared value, but it doesn't mean much in terms of comparison, because the y variable is actually different. The intercept is greater, which means that prices right at the center of the city are greater in AMS. However, they tend to be lower more when you are a further kilometer away from there.
+
+
+
+
+
+
+
+
