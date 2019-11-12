@@ -1,7 +1,7 @@
 ---
 title: "Assignment 8"
 author: "Kornel Kovacs"
-date: "10/28/2019"
+date: "10/31/2019"
 output:
   pdf_document: default
   html_document: default
@@ -22,7 +22,7 @@ All done
 
 # Exercise 3:
 Reading in from the CSV:
-```{r, include=FALSE}
+```{r}
 df_csv <- read_csv('./data_repo/hotels-europe/clean/hotels-europe_price.csv')
 ```
 
@@ -54,7 +54,7 @@ sapply(df_csv, class)
 sapply(df_dta, class)
 ```
 
-Finally, there are more sophisticated ways of showing whether they are identical or not. I should have started with this one, but I wanted to show several aspects of testing before coming up with this function.
+Finally, there are more sophisticated ways of showing whether they are identical or not. I should have started with this one, but I wanted to show several aspects of testing before coming up with these functions.
 
 All values are the same or not:
 ```{r, warning=FALSE}
@@ -66,7 +66,7 @@ Okay..but these are only the values. Are they dentical objects as well?
 identical(df_dta, df_csv)
 ```
 
-**They are the same dataframes!**
+**Somehow, they are not identical according to the function ``identical()``**
 
 # Exercise 4:
 Creating a sample of 200 to write out.
