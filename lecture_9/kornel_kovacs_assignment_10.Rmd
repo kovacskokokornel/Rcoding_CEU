@@ -1,0 +1,137 @@
+---
+title: "Assignment 10"
+author: "Kornel Kovacs"
+date: "11/15/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('tidyverse')
+library('haven')
+library('modelr')
+```
+
+## Exercise 1:
+
+To make a conclusion and be able to interpret coefficients, I first need to replicate the models with the ``simm3`` dataset.
+
+```{r}
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+
+sim3 <- sim3 %>%
+  add_predictions(mod1, var = "mod1") %>%
+  add_predictions(mod2, var = "mod2")
+```
+
+Plotting ``mod1``
+
+```{r}
+ggplot(sim3, aes(x = x1, y = y, color = x2)) + 
+  geom_point() + 
+  geom_line(aes(y = mod1))
+```
+
+Plotting ``mod2``
+
+```{r}
+ggplot(sim3, aes(x = x1, y = y, color = x2)) + 
+  geom_point() + 
+  geom_line(aes(y = mod2))
+```
+
+Making a summary of ``mod1``
+
+```{r}
+summary(mod1)
+```
+
+Making a summary of ``mod2``
+
+```{r}
+summary(mod2)
+```
+
+## Exercise 2:
+
+``data_grid()`` is a function to find all the unique values of x1 and x2 and generates all combinations.
+
+``gather_predictions()`` is a function to add each prediction as a row.
+
+I use their combination to create a grid to plot.
+
+```{r}
+grid <- sim3 %>% 
+  data_grid(x1, x2) %>% 
+  gather_predictions(mod1, mod2)
+```
+
+Visualizing the models in one graph.
+
+```{r}
+ggplot(sim3, aes(x1, y, colour = x2)) + 
+  geom_point() + 
+  geom_line(data = grid, aes(y = pred)) + 
+  facet_wrap(~ model)
+```
+
+## Exercise 3:
+ 
+In classes, we usually do not write codes that require heavy computations. However, in real life effective codes are of crucial importance. R is a very vector-oriented language. I suspect that running a ``for loop`` is slow compared to some sort of ``apply`` function. In this exercise, I intend to shed light in how much loops are slower in R.
+
+First, I create a vector with 100 000 values. I want to create a new vector adding a uniform random number between 0 and 1 to the each and every value of the original vector. I add a random seed to ensure that we add the very same random numbers to the original vector.
+
+```{r}
+numbers <- c(1:100000)
+```
+
+### Loops
+
+This for loop iterates through the original vector appending a new element to the cumulating vector in each iteration. 
+
+```{r}
+set.seed(42)
+start_time <- Sys.time()
+vec <- c()
+for (value in numbers) {
+  vec <- c(vec, value + runif(1))
+}
+end_time <- Sys.time()
+end_time - start_time
+```
+
+### Apply-like functions
+
+This is more like an R way of coding. I wrote a function that adds a random uniform number to a number. I applied this function to every element my original vector.
+
+```{r}
+set.seed(42)
+start_time <- Sys.time()
+random_maker <- function(x) {
+  return (x + runif(1))
+}
+
+vec <- sapply(numbers, random_maker)
+end_time <- Sys.time()
+end_time - start_time
+```
+
+This is ridiculously faster than the for loop. R coders should use loops rarely as they are quite slow in this R environment, furthermore, theoretically not supported.
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
