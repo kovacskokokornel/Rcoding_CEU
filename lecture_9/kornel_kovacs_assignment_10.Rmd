@@ -3,8 +3,8 @@ title: "Assignment 10"
 author: "Kornel Kovacs"
 date: "11/15/2019"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -16,7 +16,7 @@ library('modelr')
 
 ## Exercise 1:
 
-To make a conclusion and be able to interpret coefficients, I first need to replicate the models with the ``simm3`` dataset.
+To make a conclusion and be able to interpret coefficients, I first need to replicate the models with the ``simm3`` dataset. We have a categorical variable, ``x2`` and a continous one, ``x1``. This is important for understanding the equations we estimate.
 
 ```{r}
 mod1 <- lm(y ~ x1 + x2, data = sim3)
@@ -35,6 +35,23 @@ ggplot(sim3, aes(x = x1, y = y, color = x2)) +
   geom_line(aes(y = mod1))
 ```
 
+Making a summary of ``mod1``
+
+```{r}
+summary(mod1)
+```
+
+### Interpretation for ``mod1``:
+- __(Intercept):__ It is the intercept when x2 is "a", so the intercept of the red line.
+
+- __x2b:__ It shows how much the intercept is greater when x2 equals "b" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the green line is (Intercept) + x2b, so 1.87 + 2.89 = 4.76.
+
+- __x2c:__ It shows how much the intercept is greater when x2 equals "c" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the blue line is (Intercept) + x2c, so 1.87 + 4.8 = 6.67.
+
+- __x2d:__ It shows how much the intercept is greater when x2 equals "d" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the purple line is (Intercept) + x2d, so 1.87 + 4.8 = 6.67.
+
+- __-0.20 (coefficient of x1)__ is the expected difference in y corresponding to one unit difference in x1 regardless of the value of x2 (so called ceteris paribus). It is also the slope of every single line in the graph. Since it is negative, the lines are descending.
+
 Plotting ``mod2``
 
 ```{r}
@@ -43,17 +60,30 @@ ggplot(sim3, aes(x = x1, y = y, color = x2)) +
   geom_line(aes(y = mod2))
 ```
 
-Making a summary of ``mod1``
-
-```{r}
-summary(mod1)
-```
 
 Making a summary of ``mod2``
 
 ```{r}
 summary(mod2)
 ```
+
+### Interpretation for ``Mod2``
+
+- __(Intercept):__ It is the intercept when x2 is "a", so the intercept of the red line.
+
+- __x2b:__ It shows how much the intercept is greater when x2 equals "b" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the green line is (Intercept) + x2b, so 1.3 + 7.07 = 11.37.
+
+- __x2c:__ It shows how much the intercept is greater when x2 equals "c" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the blue line is (Intercept) + x2c, so 1.3 + 4.43 = 5.73.
+
+- __x2d:__ It shows how much the intercept is greater when x2 equals "d" compared to the baseline case (which is x2 = "a"). Therefore, the intercept of the purple line is (Intercept) + x2d, so 1.3 + 0.83 = 2.13.
+
+- __-0.09 (coefficient of x1)__ is the expected difference in y corresponding to one unit difference in x1 in case x2 equals "a". It is also the slope of the red line in the graph. Since it is negative, the line is descending.
+
+- __x1:x2b:__ It shows how much the slope is steeper when x2 equals "b" compared to the baseline case (which is x2 = "a"). Therefore, the slope of the green line is x1 + x1:x2b, so -0.09 + -0.76 = -0.87. Since it is negative, the line is descending.
+
+- __x1:x2c:__ It shows how much the slope is steeper when x2 equals "c" compared to the baseline case (which is x2 = "a"). Therefore, the slope of the blue line is x1 + x1:x2c, so -0.09 + 0.07 = -0.02. Since it is negative, the line is descending.
+
+- __x1:x2d:__ It shows how much the slope is steeper when x2 equals "d" compared to the baseline case (which is x2 = "a"). Therefore, the slope of the purple line is x1 + x1:x2d, so -0.09 + 0.28 = 0.19. Since it is positive, the line is ascending.
 
 ## Exercise 2:
 
@@ -80,7 +110,7 @@ ggplot(sim3, aes(x1, y, colour = x2)) +
 
 ## Exercise 3:
  
-In classes, we usually do not write codes that require heavy computations. However, in real life effective codes are of crucial importance. R is a very vector-oriented language. I suspect that running a ``for loop`` is slow compared to some sort of ``apply`` function. In this exercise, I intend to shed light in how much loops are slower in R.
+In classes, we usually do not write codes that require heavy computations. However in real life, effective codes are of crucial importance. R is a very vector-oriented language. I suspect that running a ``for loop`` is slow compared to some sort of ``apply`` function. In this exercise, I intend to shed light on how much loops are slower in R.
 
 First, I create a vector with 100 000 values. I want to create a new vector adding a uniform random number between 0 and 1 to the each and every value of the original vector. I add a random seed to ensure that we add the very same random numbers to the original vector.
 
@@ -105,7 +135,7 @@ end_time - start_time
 
 ### Apply-like functions
 
-This is more like an R way of coding. I wrote a function that adds a random uniform number to a number. I applied this function to every element my original vector.
+This is more like an R way of coding. I wrote a function that adds a random uniform number to a number. I applied this function to every element of my original vector.
 
 ```{r}
 set.seed(42)
@@ -120,18 +150,3 @@ end_time - start_time
 ```
 
 This is ridiculously faster than the for loop. R coders should use loops rarely as they are quite slow in this R environment, furthermore, theoretically not supported.
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
