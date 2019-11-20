@@ -452,7 +452,7 @@ sim3 &lt;- sim3 %&gt;%
 <h3>Interpretation for <code>Mod2</code></h3>
 <ul>
 <li><p><strong>(Intercept):</strong> It is the intercept when x2 is “a”, so the intercept of the red line.</p></li>
-<li><p><strong>x2b:</strong> It shows how much the intercept is greater when x2 equals “b” compared to the baseline case (which is x2 = “a”). Therefore, the intercept of the green line is (Intercept) + x2b, so 1.3 + 7.07 = 11.37.</p></li>
+<li><p><strong>x2b:</strong> It shows how much the intercept is greater when x2 equals “b” compared to the baseline case (which is x2 = “a”). Therefore, the intercept of the green line is (Intercept) + x2b, so 1.3 + 7.07 = 8.37.</p></li>
 <li><p><strong>x2c:</strong> It shows how much the intercept is greater when x2 equals “c” compared to the baseline case (which is x2 = “a”). Therefore, the intercept of the blue line is (Intercept) + x2c, so 1.3 + 4.43 = 5.73.</p></li>
 <li><p><strong>x2d:</strong> It shows how much the intercept is greater when x2 equals “d” compared to the baseline case (which is x2 = “a”). Therefore, the intercept of the purple line is (Intercept) + x2d, so 1.3 + 0.83 = 2.13.</p></li>
 <li><p><strong>-0.09 (coefficient of x1)</strong> is the expected difference in y corresponding to one unit difference in x1 in case x2 equals “a”. It is also the slope of the red line in the graph. Since it is negative, the line is descending.</p></li>
@@ -493,7 +493,7 @@ for (value in numbers) {
 }
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 13.11651 secs</code></pre>
+<pre><code>## Time difference of 13.71949 secs</code></pre>
 </div>
 <div id="apply-like-functions" class="section level3">
 <h3>Apply-like functions</h3>
@@ -507,7 +507,7 @@ random_maker &lt;- function(x) {
 vec &lt;- sapply(numbers, random_maker)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 0.2381191 secs</code></pre>
+<pre><code>## Time difference of 0.2655745 secs</code></pre>
 <p>This is ridiculously faster than the for loop. R coders should use loops rarely as they are quite slow in this R environment, furthermore, theoretically not supported.</p>
 </div>
 </div>
