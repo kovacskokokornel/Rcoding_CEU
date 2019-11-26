@@ -1,0 +1,166 @@
+---
+title: "Assignment 12"
+author: "Kornel Kovacs"
+date: '2019 11 22 '
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## General setup for the whole project
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(pbapply)
+library(plotrix)
+```
+
+```{r, message = FALSE }
+df <- read_csv("./hotels-vienna.csv")
+```
+
+## Exercise 1
+
+I check the mean of the price in the data.
+```{r}
+mean(df$price)
+```
+
+I am simulating 1 000 samples with replacement and saving their means in a df.
+```{r, warning = FALSE}
+bootstrap_df <- data_frame(num = 1:1000) %>% 
+    group_by(num) %>% 
+    mutate(means = mean(sample(df$price, replace = TRUE)))
+```
+
+Therefore, the bootstrap standard deviation of this mean (aka ‘the standard error’) can be calculated with ease.
+
+```{r}
+sd(bootstrap_df$means)
+```
+
+## Exercise 2
+
+I designed the function as the exercise wished.
+
+```{r}
+bootstrap_mean <- function(B,v) {
+  bootstrap_df <- data_frame(num = 1:B) %>% 
+    group_by(num) %>% 
+    mutate(means = mean(sample(v, replace = TRUE)))
+  return(sd(bootstrap_df$means))
+}
+```
+
+I apply the function on a bunch of values for the plot.
+
+```{r}
+simulated_deviations <- unlist(pblapply(2:1000, bootstrap_mean, v=df$price))
+df_to_plot <- data.frame(number_of_simulations = 2:1000, 
+                         standard_dev = simulated_deviations)
+```
+
+```{r}
+ggplot(df_to_plot, aes(x = number_of_simulations, y = standard_dev)) + 
+  geom_point() +
+  xlab("Number of simulations") +
+  ylab("Standard deviation of mean")
+```
+
+## Exercise 3
+
+I found a nice package called ``plotrix`` which has a function that calculates the standard error for ``price``.
+
+```{r}
+std.error(df$price)
+```
+
+## Exercise 4
+
+I define the function to calculate standard deviation for median values.
+
+```{r}
+bootstrap_median <- function(B,v) {
+  bootstrap_df <- data_frame(num = 1:B) %>% 
+    group_by(num) %>% 
+    mutate(medians = median(sample(v, replace = TRUE)))
+  return(sd(bootstrap_df$medians))
+}
+```
+
+I also try it out.
+
+```{r}
+bootstrap_median(1000, df$price)
+```
+
+## Exercise 5
+
+I defined my Swiss army knife, a multifunctional method. I had to differentiate between DFs and vectors because their sampling functions are named slightly different.
+
+```{r}
+bootstrap_func <- function(B,v, method) {
+  if (is.data.frame(v)) {
+    bootstrap_df <- data_frame(num = 1:B) %>% 
+    group_by(num) %>% 
+    mutate(metric_value = method(sample_n(v, nrow(v), replace = TRUE)))
+    return(sd(bootstrap_df$metric_value))
+  } else {
+    bootstrap_df <- data_frame(num = 1:B) %>% 
+    group_by(num) %>% 
+    mutate(metric_value = method(sample(v, replace = TRUE)))
+    return(sd(bootstrap_df$metric_value))
+  }
+}
+```
+
+Example calls:
+
+```{r}
+bootstrap_func(1000, df$price, sd)
+```
+
+```{r}
+bootstrap_func(1000, df$price, max)
+```
+
+```{r}
+bootstrap_func(1000, df$price, mean)
+```
+
+```{r}
+bootstrap_func(1000, df$price, median)
+```
+
+As we do not have a basic function for the top quartile, some hacking is needed for this case.
+
+```{r}
+bootstrap_func(1000, df$price,function(metric) quantile(metric)[4])
+```
+
+## Exercise 6
+
+I define the function that returns the coefficient of the regression.
+
+```{r}
+get_coeff <- function(data){
+  mod <- lm(price ~ distance_alter, data = data)
+  return(summary(mod)$coefficients[2, 4])
+}
+```
+
+I use the above as an input for the general function. This should return the standard error.
+
+```{r}
+bootstrap_func(100, df, get_coeff)
+```
+
+## Exercise 7
+
+I have the model summary here. I see a great difference in the standard error of the coefficient compared to the bootstrap standard error. I do not yet know what must have gone wrong.
+
+```{r}
+mod <- lm(price ~ distance_alter, data = df)
+summary(mod)
+```
