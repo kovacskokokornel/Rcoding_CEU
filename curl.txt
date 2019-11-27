@@ -1,0 +1,56 @@
+import requests
+
+cookies = {
+    'emfip-welcome': 'true',
+    '__utmz': '158436351.1573400263.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)',
+    '_ga': 'GA1.2.1970755844.1573466080',
+    'SESSION': '15b853f5-5017-4210-a267-b923eab73fcc',
+    'Filter|time_zone': 'CET_CEST',
+    'currentUrl': 'https://transparency.entsoe.eu/outage-domain/r2/unavailabilityOfProductionAndGenerationUnits/show',
+    '__utma': '158436351.987363641.1573400263.1574762430.1574876200.10',
+    '__utmc': '158436351',
+    '__utmt': '1',
+    'Filter|date_time_end': '27.11.2020.00.00',
+    'Filter|date_time': '10.11.2019.00.00',
+    '__utmb': '158436351.4.10.1574876200',
+}
+
+headers = {
+    'Connection': 'keep-alive',
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Origin': 'https://transparency.entsoe.eu',
+    'X-Requested-With': 'XMLHttpRequest',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+    'Content-Type': 'application/json;charset=UTF-8',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-Mode': 'cors',
+    'Referer': 'https://transparency.entsoe.eu/outage-domain/r2/unavailabilityOfProductionAndGenerationUnits/show?name=&defaultValue=true&viewType=TABLE&areaType=CTA&atch=false&dateTime.dateTime=10.11.2019+00:00|UTC|DAY&dateTime.endDateTime=27.11.2020+00:00|UTC|DAY&area.values=ALL&assetType.values=PU&assetType.values=GU&outageType.values=A54&outageType.values=A53&outageStatus.values=A05&masterDataFilterName=&masterDataFilterCode=&dv-datatable_length=10',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-GB,en;q=0.9,hu-HU;q=0.8,hu;q=0.7,en-US;q=0.6',
+}
+
+params = (
+    ('name', ''),
+    ('defaultValue', 'false'),
+    ('viewType', 'TABLE'),
+    ('areaType', 'CTA'),
+    ('atch', 'false'),
+    ('dateTime.dateTime', '10.11.2019 00:00|UTC|DAY'),
+    ('dateTime.endDateTime', '27.11.2020 00:00|UTC|DAY'),
+    ('area.values', 'ALL'),
+    ('assetType.values', ['PU', 'GU']),
+    ('outageType.values', ['A54', 'A53']),
+    ('outageStatus.values', 'A05'),
+    ('masterDataFilterName', ''),
+    ('masterDataFilterCode', ''),
+    ('dv-datatable_length', '100'),
+)
+
+data = '{"sEcho":3,"iColumns":9,"sColumns":"status,outageType,assetType,startDate,area,assetName,installedCapacity,availableCapacity,","iDisplayStart":0,"iDisplayLength":100,"amDataProp":[0,1,2,3,4,5,6,7,8]}'
+
+response = requests.post('https://transparency.entsoe.eu/outage-domain/r2/unavailabilityOfProductionAndGenerationUnits/getDataTableData/', headers=headers, params=params, cookies=cookies, data=data)
+
+#NB. Original query string below. It seems impossible to parse and
+#reproduce query strings 100% accurately so the one below is given
+#in case the reproduced version is not "correct".
+# response = requests.post('https://transparency.entsoe.eu/outage-domain/r2/unavailabilityOfProductionAndGenerationUnits/getDataTableData/?name=&defaultValue=false&viewType=TABLE&areaType=CTA&atch=false&dateTime.dateTime=10.11.2019+00%3A00%7CUTC%7CDAY&dateTime.endDateTime=27.11.2020+00%3A00%7CUTC%7CDAY&area.values=ALL&assetType.values=PU&assetType.values=GU&outageType.values=A54&outageType.values=A53&outageStatus.values=A05&masterDataFilterName=&masterDataFilterCode=&dv-datatable_length=100', headers=headers, cookies=cookies, data=data)
