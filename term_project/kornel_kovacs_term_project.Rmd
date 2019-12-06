@@ -1,10 +1,10 @@
 ---
 title: "Assignment 12"
 author: "Kornel Kovacs"
-date: '2019 11 22 '
+date: '2019 12 06 '
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ## General setup for the whole project
@@ -53,13 +53,15 @@ bootstrap_mean <- function(B,v) {
 }
 ```
 
-I apply the function on a bunch of values for the plot.
+I apply the function on a bunch of values for the plots.
 
 ```{r}
 simulated_deviations <- unlist(pblapply(2:1000, bootstrap_mean, v=df$price))
 df_to_plot <- data.frame(number_of_simulations = 2:1000, 
                          standard_dev = simulated_deviations)
 ```
+
+This is the first way of visualisation. It shows standard deviations as a function of how many values we simulate. We can see a nice funnel-like pattern.
 
 ```{r}
 ggplot(df_to_plot, aes(x = number_of_simulations, y = standard_dev)) + 
@@ -68,13 +70,31 @@ ggplot(df_to_plot, aes(x = number_of_simulations, y = standard_dev)) +
   ylab("Standard deviation of mean")
 ```
 
+A histogram of the standard deviations gives you a hint about the distribution of values. It seems to be normally distributed.
+
+
+```{r}
+ggplot(df_to_plot, aes(x=standard_dev)) + 
+  geom_histogram(bins = 100) +
+  ylab("Number of occurrences") +
+  xlab("Standard deviation of mean")
+```
+
+
 ## Exercise 3
 
-I found a nice package called ``plotrix`` which has a function that calculates the standard error for ``price``.
+I found a nice package called ``plotrix`` which has a function that calculates the standard error for mean ``price``.
 
 ```{r}
 std.error(df$price)
 ```
+
+If you are conservative and do not like to use new packages, you may also compute the same result manually.
+
+```{r}
+(conservative_std_error <- sd(df$price)/sqrt(length(df$price)))
+```
+
 
 ## Exercise 4
 
@@ -141,24 +161,24 @@ bootstrap_func(1000, df$price,function(metric) quantile(metric)[4])
 
 ## Exercise 6
 
-I define the function that returns the coefficient of the regression.
+I define the function that returns the adequat value of the regression.
 
 ```{r}
 get_coeff <- function(data){
   mod <- lm(price ~ distance_alter, data = data)
-  return(summary(mod)$coefficients[2, 4])
+  return(summary(mod)$coefficients[2, 1])
 }
 ```
 
 I use the above as an input for the general function. This should return the standard error.
 
 ```{r}
-bootstrap_func(100, df, get_coeff)
+bootstrap_func(1000, df, get_coeff)
 ```
 
 ## Exercise 7
 
-I have the model summary here. I see a great difference in the standard error of the coefficient compared to the bootstrap standard error. I do not yet know what must have gone wrong.
+I have the model summary here. I do not see a great difference in the standard error of the coefficient compared to the bootstrap standard error. However, I have no intention to deny that there is. It may vary by simply random sampling, sample sizes could also matter. If you knit my Rmd file, then it is very likely that you will have different results compared to the ones in the submitted HTML and PDF files.
 
 ```{r}
 mod <- lm(price ~ distance_alter, data = df)
